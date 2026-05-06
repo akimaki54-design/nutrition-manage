@@ -1,0 +1,3238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍽️ 栄養管理アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        /* タブボタンの並び順を調整 */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .tab-button:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* タブボタンの小サイズスタイル */
+        .tab-button-small {
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+            min-width: auto !important;
+        }
+
+        /* スマホ表示時は全て同じサイズに */
+        @media (max-width: 768px) {
+            .tab-button-small {
+                padding: 12px 15px !important;
+                font-size: 14px !important;
+            }
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); }
+            to { transform: translateX(100%); }
+        }
+
+        .form-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.delete {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .item-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .item-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .item-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .selector-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .selector-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .selector-item input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        .meal-section {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .meal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .total-nutrition {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .limit-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .limit-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .limit-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .limit-values {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s;
+        }
+
+        .progress-fill.warning {
+            background: #ffc107;
+        }
+
+        .progress-fill.danger {
+            background: #dc3545;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        .small-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .daily-record {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        #loadingIndicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+        }
+
+        #loadingIndicator h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* PC表示の月別記録テキストを非表示（スマホのみ） */
+        .month-text-records {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .month-text-records {
+                display: none;
+            }
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                width: 100%;
+            }
+
+            .tab-content {
+                padding: 15px;
+            }
+
+            .limit-comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .item-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        /* PC表示（31日分を1画面に） */
+        @media (min-width: 769px) {
+            .chart-bar {
+                max-width: none !important;
+            }
+            .bar-total-value {
+                font-size: 9px !important;
+            }
+            .bar-date-label {
+                font-size: 9px !important;
+            }
+        }
+
+        /* スマホ表示（7日分を均等に） */
+        @media (max-width: 768px) {
+            .chart-bar {
+                max-width: 60px;
+            }
+            .bar-total-value {
+                font-size: 10px !important;
+            }
+            .bar-date-label {
+                font-size: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍽️ 栄養管理アプリ</h1>
+            <p>日々の食事を記録して、健康的な生活をサポート</p>
+        </header>
+
+		 <!-- タブナビゲーション -->
+		<div class="tabs">
+			<!-- よく使うタブ（通常サイズ） -->
+			<button class="tab-button active" onclick="showTab('record')">📝 食事記録</button>
+			<button class="tab-button" onclick="showTab('view')">📊 記録表示</button>
+			
+			<!-- 管理系タブ（小さいサイズ） -->
+			<button class="tab-button tab-button-small" onclick="showTab('ingredients')">📦 食材管理</button>
+			<button class="tab-button tab-button-small" onclick="showTab('dishes')">🍱 単品料理管理</button>
+			<button class="tab-button tab-button-small" onclick="showTab('meals')">🍽️ 料理管理</button>
+			<button class="tab-button tab-button-small" onclick="showTab('settings')">⚙️ 設定</button>
+			<button class="tab-button tab-button-small" onclick="showTab('data')">💾 データ管理</button>
+		</div>
+
+		<!-- 📝 食事記録タブ（デフォルトでactive） -->
+		<div id="record" class="tab-content active">
+            <h2>📝 食事記録</h2>
+            
+            <div class="form-container">
+                <!-- 日付と食事区分 -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 250px;">
+                        <label>日付</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="changeRecordDate(-1)" style="padding: 8px 15px; font-size: 16px; font-weight: bold; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                                &lt;&lt;
+                            </button>
+                            <input type="date" id="recordDate" onchange="loadDayRecords()" style="flex: 1;">
+                            <button onclick="changeRecordDate(1)" style="padding: 8px 15px; font-size: 16px; font-weight: bold; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                                &gt;&gt;
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label>食事区分</label>
+                        <select id="mealType">
+                            <option value="breakfast">🌅 朝食</option>
+                            <option value="lunch">🌞 昼食</option>
+                            <option value="dinner">🌙 夕食</option>
+                            <option value="snack">間食</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 0 0 auto; display: flex; align-items: flex-end;">
+                        <button onclick="setRecordDateToday()" class="btn" style="background: #28a745; color: white; white-space: nowrap; padding: 10px 20px;">
+                            📅 今日
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 記録項目選択 -->
+                <div class="form-group">
+                    <label>種類</label>
+                    <select id="recordItemType" onchange="updateRecordItemSelector()">
+                        <option value="">選択してください</option>
+                        <option value="meal">料理</option>
+                        <option value="dish">単品料理</option>
+                        <option value="ingredient">食材</option>
+                    </select>
+                </div>
+                
+                <!-- 食材の種類フィルタ -->
+                <div id="recordIngredientCategoryGroup" class="form-group" style="display: none;">
+                    <label>食材の種類</label>
+                    <select id="recordIngredientCategory" onchange="updateRecordItemSelector()">
+                        <option value="全て">全て</option>
+                        <option value="肉">肉</option>
+                        <option value="魚介">魚介</option>
+                        <option value="野菜・海藻">野菜・海藻</option>
+                        <option value="キノコ類">キノコ類</option>
+                        <option value="果実">果実</option>
+                        <option value="米麺類">米麺類</option>
+                        <option value="パン">パン</option>
+                        <option value="間食">間食</option>
+                        <option value="飲料">飲料</option>
+                        <option value="調味料">調味料</option>
+                        <option value="おかず・惣菜">おかず・惣菜</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                
+                <!-- 項目選択 -->
+                <div class="form-group">
+                    <label>項目</label>
+                    <select id="recordItem">
+                        <option value="">まず種類を選択してください</option>
+                    </select>
+                </div>
+                
+                <!-- 量 -->
+                <div class="form-group">
+                    <label>量（倍率）</label>
+                    <input type="number" id="recordAmount" value="1.0" step="0.1" min="0.1">
+                </div>
+            </div>
+            
+            <!-- ボタンエリア -->
+            <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                <button onclick="addRecord()" class="btn" style="flex: 2; background: #667eea; color: white; font-size: 16px; padding: 12px;">
+                    ➕ 記録を追加
+                </button>
+                <button onclick="quickSaveToGoogleDrive()" class="btn" style="flex: 1; background: #28a745; color: white; font-size: 16px; padding: 12px;">
+                    ☁️ 保存
+                </button>
+            </div>
+            
+            <!-- 当日の記録 -->
+            <div id="currentDayRecords"></div>
+        </div>
+
+		<!-- 📊 記録表示タブ（activeを削除） -->
+		<div id="view" class="tab-content">
+			<h2>📊 記録表示</h2>
+            
+            <div class="form-container">
+                <!-- 表示期間選択 -->
+                <div class="form-group">
+                    <label>表示期間</label>
+                    <select id="viewPeriod" onchange="updateView()">
+                        <option value="day">日別</option>
+                        <option value="week">週別</option>
+                        <option value="month">月別</option>
+                    </select>
+                </div>
+                
+                <!-- 表示更新・今日ボタン（表示期間の直下に配置） -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button onclick="updateView()" class="btn" style="flex: 1; background: #667eea; color: white;">🔍 表示更新</button>
+                    <button onclick="setViewDateToday()" class="btn" style="flex: 1; background: #28a745; color: white;">📅 今日</button>
+                </div>
+                
+                <!-- 日付選択 -->
+                <div class="form-group">
+                    <label>日付選択</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button onclick="changeViewDate(-1)" style="padding: 8px 15px; font-size: 16px; font-weight: bold; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                            &lt;&lt;
+                        </button>
+                        <input type="date" id="viewDate" onchange="updateView()" style="flex: 1;">
+                        <button onclick="changeViewDate(1)" style="padding: 8px 15px; font-size: 16px; font-weight: bold; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                            &gt;&gt;
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 表示エリア -->
+            <div id="viewContent"></div>
+        </div>
+
+        <!-- 📦 食材管理タブ -->
+        <div id="ingredients" class="tab-content">
+            <h2>📦 食材管理</h2>
+            
+            <div class="form-container">
+                <div class="form-group">
+                    <label>食材名 *</label>
+                    <input type="text" id="ingredientName" placeholder="例: ご飯">
+                </div>
+                
+                <div class="form-group">
+                    <label>種類 *</label>
+                    <select id="ingredientCategory">
+                        <option value="その他">その他</option>
+                        <option value="肉">肉</option>
+                        <option value="魚介">魚介</option>
+                        <option value="野菜・海藻">野菜・海藻</option>
+                        <option value="キノコ類">キノコ類</option>
+                        <option value="果実">果実</option>
+                        <option value="米麺類">米麺類</option>
+                        <option value="パン">パン</option>
+                        <option value="間食">間食</option>
+                        <option value="飲料">飲料</option>
+                        <option value="調味料">調味料</option>
+                        <option value="おかず・惣菜">おかず・惣菜</option>
+                    </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="form-group">
+                        <label>カロリー (kcal)</label>
+                        <input type="number" id="ingredientCalories" value="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>塩分 (g)</label>
+                        <input type="number" id="ingredientSalt" value="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>タンパク質 (g)</label>
+                        <input type="number" id="ingredientProtein" value="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>カリウム (mg)</label>
+                        <input type="number" id="ingredientPotassium" value="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>リン (mg)</label>
+                        <input type="number" id="ingredientPhosphorus" value="0" step="0.1">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveIngredient()" class="btn" style="flex: 1; background: #667eea; color: white;">💾 食材を登録</button>
+                    <button onclick="clearIngredientForm()" class="btn" style="flex: 1; background: #6c757d; color: white;">🔄 クリア</button>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label>🔍 種類で絞り込み</label>
+                <select id="ingredientFilterCategory" onchange="renderIngredientList()">
+                    <option value="全て">全て</option>
+                    <option value="肉">肉</option>
+                    <option value="魚介">魚介</option>
+                    <option value="野菜・海藻">野菜・海藻</option>
+                    <option value="キノコ類">キノコ類</option>
+                    <option value="果実">果実</option>
+                    <option value="米麺類">米麺類</option>
+                    <option value="パン">パン</option>
+                    <option value="間食">間食</option>
+                    <option value="飲料">飲料</option>
+                    <option value="調味料">調味料</option>
+                    <option value="おかず・惣菜">おかず・惣菜</option>
+                    <option value="その他">その他</option>
+                </select>
+            </div>
+            
+            <div id="ingredientList"></div>
+        </div>
+
+        <!-- 🍱 単品料理管理タブ -->
+        <div id="dishes" class="tab-content">
+            <h2>🍱 単品料理管理</h2>
+            
+            <div class="form-container">
+                <div class="form-group">
+                    <label>単品料理名 *</label>
+                    <input type="text" id="dishName" placeholder="例: 味噌汁">
+                </div>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="margin: 0;">含まれる食材を選択</label>
+                        <select id="dishIngredientFilterCategory" onchange="renderDishIngredientSelector()" style="width: 200px;">
+                            <option value="全て">全て</option>
+                            <option value="肉">肉</option>
+                            <option value="魚介">魚介</option>
+                            <option value="野菜・海藻">野菜・海藻</option>
+                            <option value="キノコ類">キノコ類</option>
+                            <option value="果実">果実</option>
+                            <option value="米麺類">米麺類</option>
+                            <option value="パン">パン</option>
+                            <option value="間食">間食</option>
+                            <option value="飲料">飲料</option>
+                            <option value="調味料">調味料</option>
+                            <option value="おかず・惣菜">おかず・惣菜</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                    <div id="dishIngredientSelector"></div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveDish()" class="btn" style="flex: 1; background: #667eea; color: white;">💾 単品料理を登録</button>
+                    <button onclick="clearDishForm()" class="btn" style="flex: 1; background: #6c757d; color: white;">🔄 クリア</button>
+                </div>
+            </div>
+            
+            <div id="dishList"></div>
+        </div>
+
+        <!-- 🍽️ 料理管理タブ -->
+        <div id="meals" class="tab-content">
+            <h2>🍽️ 料理管理</h2>
+            
+            <div class="form-container">
+                <div class="form-group">
+                    <label>料理名 *</label>
+                    <input type="text" id="mealName" placeholder="例: 定食">
+                </div>
+                
+                <div class="form-group">
+                    <label>🍱 単品料理を選択</label>
+                    <div id="mealDishSelector"></div>
+                </div>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <label style="margin: 0;">📦 食材を選択</label>
+                        <select id="mealIngredientFilterCategory" onchange="renderMealIngredientSelector()" style="width: 200px;">
+                            <option value="全て">全て</option>
+                            <option value="肉">肉</option>
+                            <option value="魚介">魚介</option>
+                            <option value="野菜・海藻">野菜・海藻</option>
+                            <option value="キノコ類">キノコ類</option>
+                            <option value="果実">果実</option>
+                            <option value="米麺類">米麺類</option>
+                            <option value="パン">パン</option>
+                            <option value="間食">間食</option>
+                            <option value="飲料">飲料</option>
+                            <option value="調味料">調味料</option>
+                            <option value="おかず・惣菜">おかず・惣菜</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                    <div id="mealIngredientSelector"></div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveMeal()" class="btn" style="flex: 1; background: #667eea; color: white;">💾 料理を登録</button>
+                    <button onclick="clearMealForm()" class="btn" style="flex: 1; background: #6c757d; color: white;">🔄 クリア</button>
+                </div>
+            </div>
+            
+            <div id="mealList"></div>
+        </div>
+
+        <!-- ⚙️ 設定タブ -->
+        <div id="settings" class="tab-content">
+            <h2>⚙️ 摂取上限設定</h2>
+            
+            <div class="form-container">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="form-group">
+                        <label>カロリー上限 (kcal)</label>
+                        <input type="number" id="limitCalories" value="2000" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label>塩分上限 (g)</label>
+                        <input type="number" id="limitSalt" value="6" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>タンパク質上限 (g)</label>
+                        <input type="number" id="limitProtein" value="60" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>カリウム上限 (mg)</label>
+                        <input type="number" id="limitPotassium" value="2000" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label>リン上限 (mg)</label>
+                        <input type="number" id="limitPhosphorus" value="800" step="1">
+                    </div>
+                </div>
+                
+                <button onclick="saveLimits()" class="btn" style="width: 100%; background: #667eea; color: white; margin-top: 20px;">💾 上限値を保存</button>
+            </div>
+        </div>
+
+        <!-- 💾 データ管理タブ -->
+        <div id="data" class="tab-content">
+            <h2>💾 データ管理</h2>
+            
+            <div class="form-container">
+                <h3>☁️ Google Drive連携設定</h3>
+                <div class="form-group">
+                    <label>Apps Script ウェブアプリURL</label>
+                    <input type="text" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/...">
+                    <p class="small-text">※ あなたのApps Script URLを設定してください</p>
+                </div>
+                <button onclick="saveAppsScriptUrl()" class="btn" style="background: #667eea; color: white; margin-right: 10px;">💾 URL保存</button>
+                <button onclick="testGoogleDriveConnection()" class="btn" style="background: #17a2b8; color: white;">🔍 接続テスト</button>
+            </div>
+            
+            <div class="form-container">
+                <h3>☁️ Google Driveとの同期</h3>
+                <p>Google Driveの「html_app」フォルダと同期します</p>
+                <button onclick="loadFromGoogleDrive()" class="btn" style="background: #28a745; color: white; margin-right: 10px;">📥 Google Driveから読み込み</button>
+                <button onclick="saveToGoogleDrive()" class="btn" style="background: #007bff; color: white;">📤 Google Driveに保存</button>
+            </div>
+            
+            <div class="form-container">
+                <h3>📥 ローカルファイル操作</h3>
+                <p>すべてのデータをJSON形式でダウンロード/アップロードします</p>
+                <button onclick="exportData()" class="btn" style="background: #28a745; color: white; margin-right: 10px;">💾 JSONファイルをダウンロード</button>
+                <div style="margin-top: 15px;">
+                    <label class="btn" style="background: #007bff; color: white; display: inline-block; cursor: pointer;">
+                        📤 ローカルファイルから読み込み
+                        <input type="file" id="importFile" accept=".json" onchange="importData()" style="display: none;">
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-container">
+                <h3>📊 現在のデータ状況</h3>
+                <div id="dataStatus"></div>
+            </div>
+            
+            <div class="form-container">
+                <h3>🗑️ データのクリア</h3>
+                <p style="color: #dc3545;">⚠️ 注意: すべてのデータが削除されます。実行前に必ずバックアップしてください。</p>
+                <button onclick="clearAllData()" class="delete btn">🗑️ すべてのデータを削除</button>
+            </div>
+        </div>
+    </div>
+	
+	    <script>
+        // ===== グローバル変数 =====
+        let ingredients = [];
+        let dishes = [];
+        let meals = [];
+        let records = [];
+        let limits = {
+            calories: 2000,
+            salt: 6,
+            protein: 60,
+            potassium: 2000,
+            phosphorus: 800
+        };
+        let editingId = null;
+        let APPS_SCRIPT_URL = '';
+        let autoSyncEnabled = false;
+        let autoSyncInterval = null;
+
+		// ===== 初期化 =====
+		window.onload = function() {
+			console.log('=== アプリ初期化開始 ===');
+			
+			// Apps Script URLを読み込み
+			loadAppsScriptUrl();
+			
+			// 日付設定
+			const today = new Date();
+			document.getElementById('recordDate').valueAsDate = today;
+			document.getElementById('viewDate').valueAsDate = today;
+			
+			// まずローカルストレージから読み込み（即座に表示）
+			loadFromLocalStorage();
+			
+			console.log('ローカルストレージからの初期化完了');
+			console.log('- 食材:', ingredients.length, '件');
+			console.log('- 単品料理:', dishes.length, '件');
+			console.log('- 料理:', meals.length, '件');
+			console.log('- 記録:', records.length, '件');
+			
+			// 画面表示
+			renderAll();
+			
+			// 🆕 食事記録画面を初期表示
+			loadDayRecords();
+			
+			updateDataStatus();
+			
+			// Google Driveから自動読み込みを試みる
+			autoLoadFromGoogleDrive();
+			
+			console.log('=== 初期化完了: 食事記録画面を表示 ===');
+		};
+
+        // ===== タブ切り替え =====
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'dishes') {
+                renderDishIngredientSelector();
+            } else if (tabName === 'meals') {
+                renderMealSelectors();
+            } else if (tabName === 'record') {
+                updateRecordItemSelector();
+                loadDayRecords();
+            } else if (tabName === 'data') {
+                updateDataStatus();
+            }
+        }
+
+        // ===== ID生成 =====
+        function generateId(type, items) {
+            const prefix = type === 'ingredient' ? 'a' : type === 'dish' ? 'b' : 'c';
+            const existingNumbers = items.map(item => parseInt(item.id.substring(1))).filter(num => !isNaN(num));
+            let newNumber = 1;
+            while (existingNumbers.includes(newNumber)) {
+                newNumber++;
+            }
+            return prefix + String(newNumber).padStart(4, '0');
+        }
+
+        // ===== 食材管理 =====
+        function saveIngredient() {
+            const name = document.getElementById('ingredientName').value.trim();
+            
+            if (!name) {
+                alert('⚠️ 食材名を入力してください');
+                return;
+            }
+
+            const ingredient = {
+                id: editingId || generateId('ingredient', ingredients),
+                name: name,
+                category: document.getElementById('ingredientCategory').value,
+                nutrition: {
+                    calories: parseFloat(document.getElementById('ingredientCalories').value) || 0,
+                    salt: parseFloat(document.getElementById('ingredientSalt').value) || 0,
+                    protein: parseFloat(document.getElementById('ingredientProtein').value) || 0,
+                    potassium: parseFloat(document.getElementById('ingredientPotassium').value) || 0,
+                    phosphorus: parseFloat(document.getElementById('ingredientPhosphorus').value) || 0
+                }
+            };
+
+            if (editingId) {
+                const index = ingredients.findIndex(i => i.id === editingId);
+                ingredients[index] = ingredient;
+                editingId = null;
+            } else {
+                ingredients.push(ingredient);
+            }
+
+            saveToLocalStorage();
+            clearIngredientForm();
+            renderIngredientList();
+            
+            alert('✅ 食材を保存しました: ' + ingredient.name);
+        }
+
+        function clearIngredientForm() {
+            document.getElementById('ingredientName').value = '';
+            document.getElementById('ingredientCategory').value = 'その他';
+            document.getElementById('ingredientCalories').value = '0';
+            document.getElementById('ingredientSalt').value = '0';
+            document.getElementById('ingredientProtein').value = '0';
+            document.getElementById('ingredientPotassium').value = '0';
+            document.getElementById('ingredientPhosphorus').value = '0';
+            editingId = null;
+        }
+
+        function renderIngredientList() {
+            const list = document.getElementById('ingredientList');
+            const filterCategory = document.getElementById('ingredientFilterCategory').value;
+            
+            let filteredIngredients = ingredients;
+            if (filterCategory !== '全て') {
+                filteredIngredients = ingredients.filter(ing => ing.category === filterCategory);
+            }
+            
+            if (ingredients.length === 0) {
+                list.innerHTML = '<div class="empty-message">📦 まだ食材が登録されていません</div>';
+                return;
+            }
+            
+            if (filteredIngredients.length === 0) {
+                list.innerHTML = '<div class="empty-message">🔍 「' + filterCategory + '」の食材はありません</div>';
+                return;
+            }
+            
+            list.innerHTML = '<h3>登録済み食材一覧（' + filteredIngredients.length + '件' + 
+                (filterCategory !== '全て' ? ' / 全' + ingredients.length + '件' : '') + '）</h3>';
+            
+            filteredIngredients.forEach(ing => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                
+                const categoryColors = {
+                    '肉': '#dc3545',
+                    '魚介': '#007bff',
+                    '野菜・海藻': '#28a745',
+                    'キノコ類': '#8B4513',
+                    '果実': '#FF69B4',
+                    '米麺類': '#ffc107',
+                    'パン': '#D2691E',
+                    '間食': '#e83e8c',
+                    '飲料': '#17a2b8',
+                    '調味料': '#6c757d',
+                    'おかず・惣菜': '#fd7e14',
+                    'その他': '#6c757d'
+                };
+                const categoryColor = categoryColors[ing.category] || '#6c757d';
+                
+                const nutritionSummary = `
+                    <div style="margin-top: 10px; padding: 10px; background: #fff; border-radius: 5px; font-size: 12px; line-height: 1.6;">
+                        <strong>栄養成分:</strong>
+                        カロリー ${ing.nutrition.calories}kcal, 
+                        塩分 ${ing.nutrition.salt}g, 
+                        タンパク質 ${ing.nutrition.protein}g, 
+                        カリウム ${ing.nutrition.potassium}mg, 
+                        リン ${ing.nutrition.phosphorus}mg
+                    </div>
+                `;
+                
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div>
+                            <span class="item-id">${ing.id}</span>
+                            <span class="item-name">${ing.name}</span>
+                            <span style="background: ${categoryColor}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px;">${ing.category || 'その他'}</span>
+                        </div>
+                        <div>
+                            <button onclick="editIngredient('${ing.id}')" class="btn" style="background: #ffc107; color: #333;">✏️ 編集</button>
+                            <button class="delete btn" onclick="deleteIngredient('${ing.id}')">🗑️ 削除</button>
+                        </div>
+                    </div>
+                    ${nutritionSummary}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function editIngredient(id) {
+            const ing = ingredients.find(i => i.id === id);
+            if (!ing) return;
+
+            document.getElementById('ingredientName').value = ing.name;
+            document.getElementById('ingredientCategory').value = ing.category || 'その他';
+            document.getElementById('ingredientCalories').value = ing.nutrition.calories;
+            document.getElementById('ingredientSalt').value = ing.nutrition.salt;
+            document.getElementById('ingredientProtein').value = ing.nutrition.protein;
+            document.getElementById('ingredientPotassium').value = ing.nutrition.potassium;
+            document.getElementById('ingredientPhosphorus').value = ing.nutrition.phosphorus;
+            
+            editingId = id;
+            
+            window.scrollTo(0, 0);
+            alert('📝 編集モードです。変更後「食材を登録」をクリックしてください');
+        }
+
+        function deleteIngredient(id) {
+            if (!confirm('本当に削除しますか？')) return;
+            ingredients = ingredients.filter(i => i.id !== id);
+            saveToLocalStorage();
+            renderIngredientList();
+            alert('✅ 削除しました');
+        }
+
+        // ===== 単品料理管理 =====
+        function renderDishIngredientSelector() {
+            const selector = document.getElementById('dishIngredientSelector');
+            const filterCategory = document.getElementById('dishIngredientFilterCategory').value;
+            
+            if (ingredients.length === 0) {
+                selector.innerHTML = '<p class="small-text">⚠️ まず食材を登録してください</p>';
+                return;
+            }
+            
+            const selectedStates = {};
+            const amountStates = {};
+            ingredients.forEach(ing => {
+                const checkbox = document.getElementById(`dish_ing_${ing.id}`);
+                const amountInput = document.getElementById(`dish_amount_${ing.id}`);
+                if (checkbox) {
+                    selectedStates[ing.id] = checkbox.checked;
+                }
+                if (amountInput) {
+                    amountStates[ing.id] = amountInput.value;
+                }
+            });
+            
+            let filteredIngredients = ingredients;
+            if (filterCategory !== '全て') {
+                filteredIngredients = ingredients.filter(ing => (ing.category || 'その他') === filterCategory);
+            }
+            
+            if (filteredIngredients.length === 0) {
+                selector.innerHTML = '<p class="small-text">🔍 「' + filterCategory + '」の食材はありません</p>';
+                return;
+            }
+            
+            selector.innerHTML = '';
+            
+            filteredIngredients.forEach(ing => {
+                const div = document.createElement('div');
+                div.className = 'selector-item';
+                
+                const categoryColors = {
+                    '肉': '#dc3545',
+                    '魚介': '#007bff',
+                    '野菜・海藻': '#28a745',
+                    'キノコ類': '#8B4513',
+                    '果実': '#FF69B4',
+                    '米麺類': '#ffc107',
+                    'パン': '#D2691E',
+                    '間食': '#e83e8c',
+                    '飲料': '#17a2b8',
+                    '調味料': '#6c757d',
+                    'おかず・惣菜': '#fd7e14',
+                    'その他': '#6c757d'
+                };
+                const categoryColor = categoryColors[ing.category || 'その他'] || '#6c757d';
+                
+                const isChecked = selectedStates[ing.id] ? 'checked' : '';
+                const amountValue = amountStates[ing.id] || '1.0';
+                
+                div.innerHTML = `
+                    <input type="checkbox" id="dish_ing_${ing.id}" value="${ing.id}" ${isChecked}>
+                    <label for="dish_ing_${ing.id}">
+                        ${ing.name} 
+                        <span style="background: ${categoryColor}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 5px;">${ing.category || 'その他'}</span>
+                        <span style="color: #6c757d; font-size: 11px;">(${ing.id})</span>
+                    </label>
+                    <input type="number" id="dish_amount_${ing.id}" value="${amountValue}" step="0.1" min="0.1" placeholder="量">
+                `;
+                selector.appendChild(div);
+            });
+            
+            ingredients.forEach(ing => {
+                if (!filteredIngredients.includes(ing) && selectedStates[ing.id]) {
+                    const hiddenDiv = document.createElement('div');
+                    hiddenDiv.style.display = 'none';
+                    hiddenDiv.innerHTML = `
+                        <input type="checkbox" id="dish_ing_${ing.id}" value="${ing.id}" checked>
+                        <input type="number" id="dish_amount_${ing.id}" value="${amountStates[ing.id] || '1.0'}">
+                    `;
+                    selector.appendChild(hiddenDiv);
+                }
+            });
+        }
+
+        function saveDish() {
+            const name = document.getElementById('dishName').value.trim();
+            if (!name) {
+                alert('⚠️ 単品料理名を入力してください');
+                return;
+            }
+            const selectedIngredients = [];
+            ingredients.forEach(ing => {
+                const checkbox = document.getElementById(`dish_ing_${ing.id}`);
+                if (checkbox && checkbox.checked) {
+                    const amount = parseFloat(document.getElementById(`dish_amount_${ing.id}`).value) || 1.0;
+                    selectedIngredients.push({id: ing.id, amount: amount});
+                }
+            });
+            if (selectedIngredients.length === 0) {
+                alert('⚠️ 少なくとも1つの食材を選択してください');
+                return;
+            }
+            const dish = {
+                id: editingId || generateId('dish', dishes),
+                name: name,
+                ingredients: selectedIngredients
+            };
+            if (editingId) {
+                const index = dishes.findIndex(d => d.id === editingId);
+                dishes[index] = dish;
+                editingId = null;
+            } else {
+                dishes.push(dish);
+            }
+            saveToLocalStorage();
+            clearDishForm();
+            renderDishList();
+            alert('✅ 単品料理を保存しました: ' + dish.name);
+        }
+
+        function clearDishForm() {
+            document.getElementById('dishName').value = '';
+            document.getElementById('dishIngredientFilterCategory').value = '全て';
+            ingredients.forEach(ing => {
+                const checkbox = document.getElementById(`dish_ing_${ing.id}`);
+                if (checkbox) checkbox.checked = false;
+                const amount = document.getElementById(`dish_amount_${ing.id}`);
+                if (amount) amount.value = '1.0';
+            });
+            editingId = null;
+        }
+        function renderDishList() {
+            const list = document.getElementById('dishList');
+            
+            if (dishes.length === 0) {
+                list.innerHTML = '<div class="empty-message">🍱 まだ単品料理が登録されていません</div>';
+                return;
+            }
+            
+            list.innerHTML = '<h3>登録済み単品料理一覧（' + dishes.length + '件）</h3>';
+            
+            dishes.forEach(dish => {
+                const nutrition = calculateDishNutrition(dish);
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                
+                let ingredientsList = '<div style="margin-top: 10px;"><strong>含まれる食材:</strong><ul style="margin-left: 20px; margin-top: 5px;">';
+                dish.ingredients.forEach(item => {
+                    const ing = ingredients.find(i => i.id === item.id);
+                    if (ing) {
+                        ingredientsList += `<li>${ing.name} × ${item.amount}</li>`;
+                    }
+                });
+                ingredientsList += '</ul></div>';
+                
+                const nutritionSummary = `
+                    <div style="margin-top: 10px; padding: 10px; background: #fff; border-radius: 5px; font-size: 12px; line-height: 1.6;">
+                        <strong>栄養成分:</strong>
+                        カロリー ${nutrition.calories.toFixed(1)}kcal / 
+                        塩分 ${nutrition.salt.toFixed(1)}g / 
+                        タンパク質 ${nutrition.protein.toFixed(1)}g / 
+                        カリウム ${nutrition.potassium.toFixed(1)}mg / 
+                        リン ${nutrition.phosphorus.toFixed(1)}mg
+                    </div>
+                `;
+                
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div>
+                            <span class="item-id">${dish.id}</span>
+                            <span class="item-name">${dish.name}</span>
+                        </div>
+                        <div>
+                            <button onclick="editDish('${dish.id}')" class="btn" style="background: #ffc107; color: #333;">✏️ 編集</button>
+                            <button class="delete btn" onclick="deleteDish('${dish.id}')">🗑️ 削除</button>
+                        </div>
+                    </div>
+                    ${ingredientsList}
+                    ${nutritionSummary}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function calculateDishNutrition(dish) {
+            const nutrition = {calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0};
+            dish.ingredients.forEach(item => {
+                const ing = ingredients.find(i => i.id === item.id);
+                if (ing) {
+                    nutrition.calories += ing.nutrition.calories * item.amount;
+                    nutrition.salt += ing.nutrition.salt * item.amount;
+                    nutrition.protein += ing.nutrition.protein * item.amount;
+                    nutrition.potassium += ing.nutrition.potassium * item.amount;
+                    nutrition.phosphorus += ing.nutrition.phosphorus * item.amount;
+                }
+            });
+            return nutrition;
+        }
+
+        function editDish(id) {
+            const dish = dishes.find(d => d.id === id);
+            if (!dish) return;
+
+            showTab('dishes');
+            document.querySelectorAll('.tab-button')[2].classList.add('active');
+
+            document.getElementById('dishName').value = dish.name;
+            document.getElementById('dishIngredientFilterCategory').value = '全て';
+            
+            renderDishIngredientSelector();
+            
+            setTimeout(function() {
+                ingredients.forEach(ing => {
+                    const checkbox = document.getElementById(`dish_ing_${ing.id}`);
+                    if (checkbox) checkbox.checked = false;
+                    const amount = document.getElementById(`dish_amount_${ing.id}`);
+                    if (amount) amount.value = '1.0';
+                });
+                
+                dish.ingredients.forEach(item => {
+                    const checkbox = document.getElementById(`dish_ing_${item.id}`);
+                    if (checkbox) checkbox.checked = true;
+                    const amount = document.getElementById(`dish_amount_${item.id}`);
+                    if (amount) amount.value = item.amount;
+                });
+            }, 100);
+            
+            editingId = id;
+            
+            window.scrollTo(0, 0);
+            alert('📝 編集モードです。変更後「単品料理を登録」をクリックしてください');
+        }
+
+        function deleteDish(id) {
+            if (!confirm('本当に削除しますか？')) return;
+            dishes = dishes.filter(d => d.id !== id);
+            saveToLocalStorage();
+            renderDishList();
+            alert('✅ 削除しました');
+        }
+
+        // ===== 料理管理 =====
+        function renderMealSelectors() {
+            renderMealDishSelector();
+            renderMealIngredientSelector();
+        }
+
+        function renderMealDishSelector() {
+            const selector = document.getElementById('mealDishSelector');
+            if (dishes.length === 0) {
+                selector.innerHTML = '<p class="small-text">⚠️ まだ単品料理が登録されていません</p>';
+                return;
+            }
+            selector.innerHTML = '';
+            dishes.forEach(dish => {
+                const div = document.createElement('div');
+                div.className = 'selector-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="meal_dish_${dish.id}" value="${dish.id}">
+                    <label for="meal_dish_${dish.id}">${dish.name} (${dish.id})</label>
+                    <input type="number" id="meal_dish_amount_${dish.id}" value="1.0" step="0.1" min="0.1" placeholder="量">
+                `;
+                selector.appendChild(div);
+            });
+        }
+
+        function renderMealIngredientSelector() {
+            const selector = document.getElementById('mealIngredientSelector');
+            const filterCategory = document.getElementById('mealIngredientFilterCategory').value;
+            
+            if (ingredients.length === 0) {
+                selector.innerHTML = '<p class="small-text">⚠️ まだ食材が登録されていません</p>';
+                return;
+            }
+            
+            const selectedStates = {};
+            const amountStates = {};
+            ingredients.forEach(ing => {
+                const checkbox = document.getElementById(`meal_ing_${ing.id}`);
+                const amountInput = document.getElementById(`meal_ing_amount_${ing.id}`);
+                if (checkbox) {
+                    selectedStates[ing.id] = checkbox.checked;
+                }
+                if (amountInput) {
+                    amountStates[ing.id] = amountInput.value;
+                }
+            });
+            
+            let filteredIngredients = ingredients;
+            if (filterCategory !== '全て') {
+                filteredIngredients = ingredients.filter(ing => (ing.category || 'その他') === filterCategory);
+            }
+            
+            if (filteredIngredients.length === 0) {
+                selector.innerHTML = '<p class="small-text">🔍 「' + filterCategory + '」の食材はありません</p>';
+                return;
+            }
+            
+            selector.innerHTML = '';
+            
+            filteredIngredients.forEach(ing => {
+                const div = document.createElement('div');
+                div.className = 'selector-item';
+                
+                const categoryColors = {
+                    '肉': '#dc3545',
+                    '魚介': '#007bff',
+                    '野菜・海藻': '#28a745',
+                    'キノコ類': '#8B4513',
+                    '果実': '#FF69B4',
+                    '米麺類': '#ffc107',
+                    'パン': '#D2691E',
+                    '間食': '#e83e8c',
+                    '飲料': '#17a2b8',
+                    '調味料': '#6c757d',
+                    'おかず・惣菜': '#fd7e14',
+                    'その他': '#6c757d'
+                };
+                const categoryColor = categoryColors[ing.category || 'その他'] || '#6c757d';
+                
+                const isChecked = selectedStates[ing.id] ? 'checked' : '';
+                const amountValue = amountStates[ing.id] || '1.0';
+                
+                div.innerHTML = `
+                    <input type="checkbox" id="meal_ing_${ing.id}" value="${ing.id}" ${isChecked}>
+                    <label for="meal_ing_${ing.id}">
+                        ${ing.name} 
+                        <span style="background: ${categoryColor}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 5px;">${ing.category || 'その他'}</span>
+                        <span style="color: #6c757d; font-size: 11px;">(${ing.id})</span>
+                    </label>
+                    <input type="number" id="meal_ing_amount_${ing.id}" value="${amountValue}" step="0.1" min="0.1" placeholder="量">
+                `;
+                selector.appendChild(div);
+            });
+            
+            ingredients.forEach(ing => {
+                if (!filteredIngredients.includes(ing) && selectedStates[ing.id]) {
+                    const hiddenDiv = document.createElement('div');
+                    hiddenDiv.style.display = 'none';
+                    hiddenDiv.innerHTML = `
+                        <input type="checkbox" id="meal_ing_${ing.id}" value="${ing.id}" checked>
+                        <input type="number" id="meal_ing_amount_${ing.id}" value="${amountStates[ing.id] || '1.0'}">
+                    `;
+                    selector.appendChild(hiddenDiv);
+                }
+            });
+        }
+
+        function saveMeal() {
+            const name = document.getElementById('mealName').value.trim();
+            if (!name) {
+                alert('⚠️ 料理名を入力してください');
+                return;
+            }
+            const selectedDishes = [];
+            dishes.forEach(dish => {
+                const checkbox = document.getElementById(`meal_dish_${dish.id}`);
+                if (checkbox && checkbox.checked) {
+                    const amount = parseFloat(document.getElementById(`meal_dish_amount_${dish.id}`).value) || 1.0;
+                    selectedDishes.push({id: dish.id, amount: amount});
+                }
+            });
+            const selectedIngredients = [];
+            ingredients.forEach(ing => {
+                const checkbox = document.getElementById(`meal_ing_${ing.id}`);
+                if (checkbox && checkbox.checked) {
+                    const amount = parseFloat(document.getElementById(`meal_ing_amount_${ing.id}`).value) || 1.0;
+                    selectedIngredients.push({id: ing.id, amount: amount});
+                }
+            });
+            if (selectedDishes.length === 0 && selectedIngredients.length === 0) {
+                alert('⚠️ 少なくとも1つの単品料理または食材を選択してください');
+                return;
+            }
+            const meal = {
+                id: editingId || generateId('meal', meals),
+                name: name,
+                dishes: selectedDishes,
+                ingredients: selectedIngredients
+            };
+            if (editingId) {
+                const index = meals.findIndex(m => m.id === editingId);
+                meals[index] = meal;
+                editingId = null;
+            } else {
+                meals.push(meal);
+            }
+            saveToLocalStorage();
+            clearMealForm();
+            renderMealList();
+            alert('✅ 料理を保存しました: ' + meal.name);
+        }
+
+        function clearMealForm() {
+            document.getElementById('mealName').value = '';
+            document.getElementById('mealIngredientFilterCategory').value = '全て';
+            
+            dishes.forEach(dish => {
+                const checkbox = document.getElementById(`meal_dish_${dish.id}`);
+                if (checkbox) checkbox.checked = false;
+                const amount = document.getElementById(`meal_dish_amount_${dish.id}`);
+                if (amount) amount.value = '1.0';
+            });
+            
+            ingredients.forEach(ing => {
+                const checkbox = document.getElementById(`meal_ing_${ing.id}`);
+                if (checkbox) checkbox.checked = false;
+                const amount = document.getElementById(`meal_ing_amount_${ing.id}`);
+                if (amount) amount.value = '1.0';
+            });
+            
+            editingId = null;
+        }
+
+        function renderMealList() {
+            const list = document.getElementById('mealList');
+            
+            if (meals.length === 0) {
+                list.innerHTML = '<div class="empty-message">🍽️ まだ料理が登録されていません</div>';
+                return;
+            }
+            
+            list.innerHTML = '<h3>登録済み料理一覧（' + meals.length + '件）</h3>';
+            
+            meals.forEach(meal => {
+                const nutrition = calculateMealNutrition(meal);
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                
+                let contentsList = '<div style="margin-top: 10px;">';
+                
+                if (meal.dishes.length > 0) {
+                    contentsList += '<strong>含まれる単品料理:</strong><ul style="margin-left: 20px; margin-top: 5px;">';
+                    meal.dishes.forEach(item => {
+                        const dish = dishes.find(d => d.id === item.id);
+                        if (dish) {
+                            contentsList += `<li>${dish.name} × ${item.amount}</li>`;
+                        }
+                    });
+                    contentsList += '</ul>';
+                }
+                
+                if (meal.ingredients.length > 0) {
+                    contentsList += '<strong>含まれる食材:</strong><ul style="margin-left: 20px; margin-top: 5px;">';
+                    meal.ingredients.forEach(item => {
+                        const ing = ingredients.find(i => i.id === item.id);
+                        if (ing) {
+                            contentsList += `<li>${ing.name} × ${item.amount}</li>`;
+                        }
+                    });
+                    contentsList += '</ul>';
+                }
+                
+                contentsList += '</div>';
+                
+                const nutritionSummary = `
+                    <div style="margin-top: 10px; padding: 10px; background: #fff; border-radius: 5px; font-size: 12px; line-height: 1.6;">
+                        <strong>栄養成分:</strong>
+                        カロリー ${nutrition.calories.toFixed(1)}kcal / 
+                        塩分 ${nutrition.salt.toFixed(1)}g / 
+                        タンパク質 ${nutrition.protein.toFixed(1)}g / 
+                        カリウム ${nutrition.potassium.toFixed(1)}mg / 
+                        リン ${nutrition.phosphorus.toFixed(1)}mg
+                    </div>
+                `;
+                
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div>
+                            <span class="item-id">${meal.id}</span>
+                            <span class="item-name">${meal.name}</span>
+                        </div>
+                        <div>
+                            <button onclick="editMeal('${meal.id}')" class="btn" style="background: #ffc107; color: #333;">✏️ 編集</button>
+                            <button class="delete btn" onclick="deleteMeal('${meal.id}')">🗑️ 削除</button>
+                        </div>
+                    </div>
+                    ${contentsList}
+                    ${nutritionSummary}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function calculateMealNutrition(meal) {
+            const nutrition = {calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0};
+            meal.dishes.forEach(item => {
+                const dish = dishes.find(d => d.id === item.id);
+                if (dish) {
+                    const dishNutrition = calculateDishNutrition(dish);
+                    nutrition.calories += dishNutrition.calories * item.amount;
+                    nutrition.salt += dishNutrition.salt * item.amount;
+                    nutrition.protein += dishNutrition.protein * item.amount;
+                    nutrition.potassium += dishNutrition.potassium * item.amount;
+                    nutrition.phosphorus += dishNutrition.phosphorus * item.amount;
+                }
+            });
+            meal.ingredients.forEach(item => {
+                const ing = ingredients.find(i => i.id === item.id);
+                if (ing) {
+                    nutrition.calories += ing.nutrition.calories * item.amount;
+                    nutrition.salt += ing.nutrition.salt * item.amount;
+                    nutrition.protein += ing.nutrition.protein * item.amount;
+                    nutrition.potassium += ing.nutrition.potassium * item.amount;
+                    nutrition.phosphorus += ing.nutrition.phosphorus * item.amount;
+                }
+            });
+            return nutrition;
+        }
+
+        function editMeal(id) {
+            const meal = meals.find(m => m.id === id);
+            if (!meal) return;
+
+            showTab('meals');
+            document.querySelectorAll('.tab-button')[4].classList.add('active');
+
+            document.getElementById('mealName').value = meal.name;
+            document.getElementById('mealIngredientFilterCategory').value = '全て';
+            
+            dishes.forEach(dish => {
+                const checkbox = document.getElementById(`meal_dish_${dish.id}`);
+                if (checkbox) checkbox.checked = false;
+                const amount = document.getElementById(`meal_dish_amount_${dish.id}`);
+                if (amount) amount.value = '1.0';
+            });
+            
+            renderMealIngredientSelector();
+            
+            setTimeout(function() {
+                ingredients.forEach(ing => {
+                    const checkbox = document.getElementById(`meal_ing_${ing.id}`);
+                    if (checkbox) checkbox.checked = false;
+                    const amount = document.getElementById(`meal_ing_amount_${ing.id}`);
+                    if (amount) amount.value = '1.0';
+                });
+                
+                meal.dishes.forEach(item => {
+                    const checkbox = document.getElementById(`meal_dish_${item.id}`);
+                    if (checkbox) checkbox.checked = true;
+                    const amount = document.getElementById(`meal_dish_amount_${item.id}`);
+                    if (amount) amount.value = item.amount;
+                });
+                
+                meal.ingredients.forEach(item => {
+                    const checkbox = document.getElementById(`meal_ing_${item.id}`);
+                    if (checkbox) checkbox.checked = true;
+                    const amount = document.getElementById(`meal_ing_amount_${item.id}`);
+                    if (amount) amount.value = item.amount;
+                });
+            }, 100);
+            
+            editingId = id;
+            
+            window.scrollTo(0, 0);
+            alert('📝 編集モードです。変更後「料理を登録」をクリックしてください');
+        }
+
+        function deleteMeal(id) {
+            if (!confirm('本当に削除しますか？')) return;
+            meals = meals.filter(m => m.id !== id);
+            saveToLocalStorage();
+            renderMealList();
+            alert('✅ 削除しました');
+        }
+
+        // ===== 食事記録 =====
+        function updateRecordItemSelector() {
+            const type = document.getElementById('recordItemType').value;
+            const selector = document.getElementById('recordItem');
+            const categoryGroup = document.getElementById('recordIngredientCategoryGroup');
+            
+            selector.innerHTML = '<option value="">選択してください</option>';
+            
+            if (type === 'meal') {
+                categoryGroup.style.display = 'none';
+                meals.forEach(meal => {
+                    const option = document.createElement('option');
+                    option.value = meal.id;
+                    option.textContent = meal.name + ' (' + meal.id + ')';
+                    selector.appendChild(option);
+                });
+            } else if (type === 'dish') {
+                categoryGroup.style.display = 'none';
+                dishes.forEach(dish => {
+                    const option = document.createElement('option');
+                    option.value = dish.id;
+                    option.textContent = dish.name + ' (' + dish.id + ')';
+                    selector.appendChild(option);
+                });
+            } else if (type === 'ingredient') {
+                categoryGroup.style.display = 'block';
+                
+                const filterCategory = document.getElementById('recordIngredientCategory').value;
+                
+                let filteredIngredients = ingredients;
+                if (filterCategory !== '全て') {
+                    filteredIngredients = ingredients.filter(ing => (ing.category || 'その他') === filterCategory);
+                }
+                
+                if (filteredIngredients.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = '「' + filterCategory + '」の食材はありません';
+                    selector.appendChild(option);
+                } else {
+                    filteredIngredients.forEach(ing => {
+                        const option = document.createElement('option');
+                        option.value = ing.id;
+                        option.textContent = ing.name + ' [' + (ing.category || 'その他') + '] (' + ing.id + ')';
+                        selector.appendChild(option);
+                    });
+                }
+            } else {
+                categoryGroup.style.display = 'none';
+            }
+        }
+
+        function addRecord() {
+            const date = document.getElementById('recordDate').value;
+            const mealType = document.getElementById('mealType').value;
+            const itemType = document.getElementById('recordItemType').value;
+            const itemId = document.getElementById('recordItem').value;
+            const amount = parseFloat(document.getElementById('recordAmount').value) || 1.0;
+            
+            if (!date) {
+                alert('⚠️ 日付を選択してください');
+                return;
+            }
+            if (!itemType || !itemId) {
+                alert('⚠️ 種類と項目を選択してください');
+                return;
+            }
+            
+            const record = {
+                id: Date.now().toString(),
+                date: date,
+                mealType: mealType,
+                itemType: itemType,
+                itemId: itemId,
+                amount: amount
+            };
+            
+            records.push(record);
+            saveToLocalStorage();
+            document.getElementById('recordAmount').value = '1.0';
+            loadDayRecords();
+            
+            const item = getRecordItem(record);
+            if (item) {
+                alert('✅ 記録を追加しました: ' + item.name);
+            }
+        }
+
+        function loadDayRecords() {
+            const date = document.getElementById('recordDate').value;
+            const container = document.getElementById('currentDayRecords');
+            const dayRecords = records.filter(r => r.date === date);
+            
+            if (dayRecords.length === 0) {
+                container.innerHTML = '<div class="empty-message">📝 この日の記録はまだありません</div>';
+                return;
+            }
+            
+            container.innerHTML = '<h3>' + date + ' の記録</h3>';
+            const mealTypes = {breakfast: '🌅 朝食', lunch: '🌞 昼食', dinner: '🌙 夕食', snack: '間食'};
+            
+            ['breakfast', 'lunch', 'dinner', 'snack'].forEach(type => {
+                const typeRecords = dayRecords.filter(r => r.mealType === type);
+                if (typeRecords.length > 0) {
+                    const section = document.createElement('div');
+                    section.className = 'meal-section';
+                    section.innerHTML = `<div class="meal-title">${mealTypes[type]}</div>`;
+                    typeRecords.forEach(record => {
+                        const item = getRecordItem(record);
+                        if (item) {
+                            const nutrition = getRecordNutrition(record);
+                            const div = document.createElement('div');
+                            div.className = 'record-item';
+                            div.innerHTML = `
+                                <div>
+                                    <strong>${item.name}</strong> × ${record.amount}
+                                    <div class="small-text">
+                                        カロリー: ${nutrition.calories.toFixed(1)}kcal | 
+                                        塩分: ${nutrition.salt.toFixed(1)}g | 
+                                        タンパク質: ${nutrition.protein.toFixed(1)}g | 
+                                        カリウム: ${nutrition.potassium.toFixed(1)}mg | 
+                                        リン: ${nutrition.phosphorus.toFixed(1)}mg
+                                    </div>
+                                </div>
+                                <button class="delete btn" onclick="deleteRecord('${record.id}')">🗑️</button>
+                            `;
+                            section.appendChild(div);
+                        }
+                    });
+                    container.appendChild(section);
+                }
+            });
+            
+            const totalNutrition = calculateDayNutrition(date);
+            const totalDiv = document.createElement('div');
+            totalDiv.className = 'total-nutrition';
+            totalDiv.innerHTML = `
+                <h3>📊 本日の合計</h3>
+                <div class="limit-comparison">
+                    ${createLimitItem('カロリー', totalNutrition.calories, limits.calories, 'kcal')}
+                    ${createLimitItem('塩分', totalNutrition.salt, limits.salt, 'g')}
+                    ${createLimitItem('タンパク質', totalNutrition.protein, limits.protein, 'g')}
+                    ${createLimitItem('カリウム', totalNutrition.potassium, limits.potassium, 'mg')}
+                    ${createLimitItem('リン', totalNutrition.phosphorus, limits.phosphorus, 'mg')}
+                </div>
+            `;
+            container.appendChild(totalDiv);
+        }
+
+        function getRecordItem(record) {
+            if (record.itemType === 'meal') return meals.find(m => m.id === record.itemId);
+            else if (record.itemType === 'dish') return dishes.find(d => d.id === record.itemId);
+            else if (record.itemType === 'ingredient') return ingredients.find(i => i.id === record.itemId);
+            return null;
+        }
+
+        function getRecordNutrition(record) {
+            let baseNutrition = {calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0};
+            if (record.itemType === 'meal') {
+                const meal = meals.find(m => m.id === record.itemId);
+                if (meal) baseNutrition = calculateMealNutrition(meal);
+            } else if (record.itemType === 'dish') {
+                const dish = dishes.find(d => d.id === record.itemId);
+                if (dish) baseNutrition = calculateDishNutrition(dish);
+            } else if (record.itemType === 'ingredient') {
+                const ing = ingredients.find(i => i.id === record.itemId);
+                if (ing) baseNutrition = ing.nutrition;
+            }
+            return {
+                calories: baseNutrition.calories * record.amount,
+                salt: baseNutrition.salt * record.amount,
+                protein: baseNutrition.protein * record.amount,
+                potassium: baseNutrition.potassium * record.amount,
+                phosphorus: baseNutrition.phosphorus * record.amount
+            };
+        }
+
+        function calculateDayNutrition(date) {
+            const dayRecords = records.filter(r => r.date === date);
+            const total = {calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0};
+            dayRecords.forEach(record => {
+                const nutrition = getRecordNutrition(record);
+                total.calories += nutrition.calories;
+                total.salt += nutrition.salt;
+                total.protein += nutrition.protein;
+                total.potassium += nutrition.potassium;
+                total.phosphorus += nutrition.phosphorus;
+            });
+            return total;
+        }
+
+        function createLimitItem(label, value, limit, unit) {
+            const percentage = (value / limit) * 100;
+            let progressClass = '';
+            if (percentage >= 100) progressClass = 'danger';
+            else if (percentage >= 80) progressClass = 'warning';
+            return `
+                <div class="limit-item">
+                    <div class="limit-label">${label}</div>
+                    <div class="limit-values">${value.toFixed(1)} / ${limit} ${unit}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+                    </div>
+                    <div class="small-text" style="margin-top: 5px; color: white;">${percentage.toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('この記録を削除しますか？')) return;
+            records = records.filter(r => r.id !== id);
+            saveToLocalStorage();
+            loadDayRecords();
+            alert('✅ 削除しました');
+        }
+
+        // ===== 日付ナビゲーション =====
+        function changeRecordDate(direction) {
+            const dateInput = document.getElementById('recordDate');
+            const currentDate = new Date(dateInput.value);
+            currentDate.setDate(currentDate.getDate() + direction);
+            
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            const newDateStr = `${year}-${month}-${day}`;
+            
+            dateInput.value = newDateStr;
+            loadDayRecords();
+        }
+
+        function setRecordDateToday() {
+            const dateInput = document.getElementById('recordDate');
+            const today = new Date();
+            
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            
+            dateInput.value = todayStr;
+            loadDayRecords();
+        }
+
+        function changeViewDate(direction) {
+            const dateInput = document.getElementById('viewDate');
+            const periodSelect = document.getElementById('viewPeriod');
+            const period = periodSelect.value;
+            
+            const currentDate = new Date(dateInput.value);
+            let newDate;
+            
+            if (period === 'day') {
+                newDate = new Date(currentDate);
+                newDate.setDate(currentDate.getDate() + direction);
+                
+            } else if (period === 'week') {
+                newDate = new Date(currentDate);
+                const dayOfWeek = currentDate.getDay();
+                const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                const currentMonday = new Date(currentDate);
+                currentMonday.setDate(currentDate.getDate() + daysToMonday);
+                newDate = new Date(currentMonday);
+                newDate.setDate(currentMonday.getDate() + (direction * 7));
+                
+            } else if (period === 'month') {
+                newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
+            }
+            
+            const year = newDate.getFullYear();
+            const month = String(newDate.getMonth() + 1).padStart(2, '0');
+            const day = String(newDate.getDate()).padStart(2, '0');
+            const newDateStr = `${year}-${month}-${day}`;
+            
+            dateInput.value = newDateStr;
+            updateView();
+        }
+
+        function setViewDateToday() {
+            const dateInput = document.getElementById('viewDate');
+            const today = new Date();
+            
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            
+            dateInput.value = todayStr;
+            updateView();
+        }
+
+        // ===== 記録表示 =====
+        function updateView() {
+            const period = document.getElementById('viewPeriod').value;
+            const date = document.getElementById('viewDate').value;
+            const container = document.getElementById('viewContent');
+            
+            if (!date) {
+                container.innerHTML = '<div class="empty-message">日付を選択してください</div>';
+                return;
+            }
+            
+            if (period === 'day') viewDay(date, container);
+            else if (period === 'week') viewWeek(date, container);
+            else if (period === 'month') viewMonth(date, container);
+        }
+
+        function viewDay(date, container) {
+            const dayRecords = records.filter(r => r.date === date);
+            
+            if (dayRecords.length === 0) {
+                container.innerHTML = '<div class="empty-message">この日の記録はありません</div>';
+                return;
+            }
+            
+            const nutrition = calculateDayNutrition(date);
+            
+            let html = `<div class="daily-record"><h3>${date} の記録</h3>`;
+            
+            const mealTypeNames = {
+                breakfast: '🌅 朝食',
+                lunch: '🌞 昼食',
+                dinner: '🌙 夕食',
+                snack: '間食'
+            };
+            
+            ['breakfast', 'lunch', 'dinner', 'snack'].forEach(mealType => {
+                const typeRecords = dayRecords.filter(r => r.mealType === mealType);
+                
+                if (typeRecords.length > 0) {
+                    html += `<div style="margin-bottom: 20px;">`;
+                    html += `<h4 style="color: #667eea; margin-bottom: 10px;">${mealTypeNames[mealType]}</h4>`;
+                    
+                    typeRecords.forEach(record => {
+                        const item = getRecordItem(record);
+                        const recordNutrition = getRecordNutrition(record);
+                        
+                        if (item) {
+                            html += `
+                                <div style="background: #f8f9fa; padding: 12px; margin-bottom: 8px; border-radius: 5px; border-left: 3px solid #667eea;">
+                                    <div style="font-weight: bold; margin-bottom: 5px;">
+                                        ${item.name} × ${record.amount}
+                                    </div>
+                                    <div style="font-size: 12px; color: #6c757d; line-height: 1.5;">
+                                        カロリー ${recordNutrition.calories.toFixed(1)}kcal, 
+                                        塩分 ${recordNutrition.salt.toFixed(1)}g, 
+                                        タンパク質 ${recordNutrition.protein.toFixed(1)}g, 
+                                        カリウム ${recordNutrition.potassium.toFixed(1)}mg, 
+                                        リン ${recordNutrition.phosphorus.toFixed(1)}mg
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    html += `</div>`;
+                }
+            });
+            
+            html += `</div>`;
+            
+            html += `
+                <div class="total-nutrition">
+                    <h3>📊 合計</h3>
+                    <div class="limit-comparison">
+                        ${createLimitItem('カロリー', nutrition.calories, limits.calories, 'kcal')}
+                        ${createLimitItem('塩分', nutrition.salt, limits.salt, 'g')}
+                        ${createLimitItem('タンパク質', nutrition.protein, limits.protein, 'g')}
+                        ${createLimitItem('カリウム', nutrition.potassium, limits.potassium, 'mg')}
+                        ${createLimitItem('リン', nutrition.phosphorus, limits.phosphorus, 'mg')}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function calculateMealTypeNutrition(date) {
+            const dayRecords = records.filter(r => r.date === date);
+            
+            const mealTypes = {
+                breakfast: { calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0 },
+                lunch: { calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0 },
+                dinner: { calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0 },
+                snack: { calories: 0, salt: 0, protein: 0, potassium: 0, phosphorus: 0 }
+            };
+            
+            dayRecords.forEach(record => {
+                const nutrition = getRecordNutrition(record);
+                const mealType = record.mealType;
+                
+                if (mealTypes[mealType]) {
+                    mealTypes[mealType].calories += nutrition.calories;
+                    mealTypes[mealType].salt += nutrition.salt;
+                    mealTypes[mealType].protein += nutrition.protein;
+                    mealTypes[mealType].potassium += nutrition.potassium;
+                    mealTypes[mealType].phosphorus += nutrition.phosphorus;
+                }
+            });
+            
+            return mealTypes;
+        }
+		
+        // ===== 週別表示 =====
+		// ===== 週別表示（月曜日～日曜日） =====
+		function viewWeek(dateStr, container) {
+			const targetDate = new Date(dateStr);
+			const dayOfWeek = targetDate.getDay(); // 0=日, 1=月, ..., 6=土
+			
+			// 月曜日を週の開始とする
+			const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 日曜は-6、月曜は0
+			const startDate = new Date(targetDate);
+			startDate.setDate(targetDate.getDate() + daysToMonday);
+			
+			const weekDates = [];
+			for (let i = 0; i < 7; i++) {
+				const date = new Date(startDate);
+				date.setDate(startDate.getDate() + i);
+				weekDates.push(date.toISOString().split('T')[0]);
+			}
+			
+			console.log('週別表示:', weekDates[0], '(月)～', weekDates[6], '(日)');
+			
+			const weekTotal = {
+				calories: 0,
+				salt: 0,
+				protein: 0,
+				potassium: 0,
+				phosphorus: 0
+			};
+			
+			const dayNames = ['月', '火', '水', '木', '金', '土', '日']; // 月曜始まり
+			const weekData = [];
+			
+			weekDates.forEach((date, index) => {
+				const dayNutrition = calculateDayNutrition(date);
+				weekTotal.calories += dayNutrition.calories;
+				weekTotal.salt += dayNutrition.salt;
+				weekTotal.protein += dayNutrition.protein;
+				weekTotal.potassium += dayNutrition.potassium;
+				weekTotal.phosphorus += dayNutrition.phosphorus;
+				
+				const mealTypeData = calculateMealTypeNutrition(date);
+				
+				weekData.push({
+					date: date,
+					dayName: dayNames[index], // 月～日の順
+					nutrition: dayNutrition,
+					mealTypes: mealTypeData
+				});
+			});
+			
+			const weekAverage = {
+				calories: weekTotal.calories / 7,
+				salt: weekTotal.salt / 7,
+				protein: weekTotal.protein / 7,
+				potassium: weekTotal.potassium / 7,
+				phosphorus: weekTotal.phosphorus / 7
+			};
+			
+			let html = `
+				<div class="total-nutrition">
+					<h3>📊 週平均（${weekDates[0]} ～ ${weekDates[6]}）</h3>
+					<div class="limit-comparison">
+						${createLimitItem('カロリー', weekAverage.calories, limits.calories, 'kcal')}
+						${createLimitItem('塩分', weekAverage.salt, limits.salt, 'g')}
+						${createLimitItem('タンパク質', weekAverage.protein, limits.protein, 'g')}
+						${createLimitItem('カリウム', weekAverage.potassium, limits.potassium, 'mg')}
+						${createLimitItem('リン', weekAverage.phosphorus, limits.phosphorus, 'mg')}
+					</div>
+				</div>
+			`;
+			
+			html += createNutritionCharts(weekData, '週別');
+			container.innerHTML = html;
+		}
+
+        // ===== 月別表示 =====
+        function viewMonth(dateStr, container) {
+            const targetDate = new Date(dateStr);
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth();
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            const monthDates = [];
+            for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+                monthDates.push(new Date(d).toISOString().split('T')[0]);
+            }
+            
+            const monthTotal = {
+                calories: 0,
+                salt: 0,
+                protein: 0,
+                potassium: 0,
+                phosphorus: 0
+            };
+            
+            const monthData = [];
+            
+            monthDates.forEach(date => {
+                const dayNutrition = calculateDayNutrition(date);
+                
+                if (dayNutrition.calories > 0 || dayNutrition.salt > 0 || dayNutrition.protein > 0) {
+                    monthTotal.calories += dayNutrition.calories;
+                    monthTotal.salt += dayNutrition.salt;
+                    monthTotal.protein += dayNutrition.protein;
+                    monthTotal.potassium += dayNutrition.potassium;
+                    monthTotal.phosphorus += dayNutrition.phosphorus;
+                    
+                    const mealTypeData = calculateMealTypeNutrition(date);
+                    
+                    monthData.push({
+                        date: date,
+                        dayName: new Date(date).getDate() + '日',
+                        nutrition: dayNutrition,
+                        mealTypes: mealTypeData
+                    });
+                }
+            });
+            
+            const recordDays = monthData.length;
+            
+            const monthAverage = {
+                calories: recordDays > 0 ? monthTotal.calories / recordDays : 0,
+                salt: recordDays > 0 ? monthTotal.salt / recordDays : 0,
+                protein: recordDays > 0 ? monthTotal.protein / recordDays : 0,
+                potassium: recordDays > 0 ? monthTotal.potassium / recordDays : 0,
+                phosphorus: recordDays > 0 ? monthTotal.phosphorus / recordDays : 0
+            };
+            
+            let html = `
+                <div class="month-text-records">
+                    <div class="daily-record"><h3>${year}年${month + 1}月の記録</h3>
+            `;
+            
+            monthData.forEach(dayData => {
+                html += `
+                    <div style="background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <div style="font-weight: bold; color: #667eea; margin-bottom: 8px;">
+                            ${dayData.date}
+                        </div>
+                        <div style="font-size: 12px; color: #333; line-height: 1.6;">
+                            カロリー ${dayData.nutrition.calories.toFixed(1)}kcal, 
+                            塩分 ${dayData.nutrition.salt.toFixed(1)}g, 
+                            タンパク質 ${dayData.nutrition.protein.toFixed(1)}g, 
+                            カリウム ${dayData.nutrition.potassium.toFixed(1)}mg, 
+                            リン ${dayData.nutrition.phosphorus.toFixed(1)}mg
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            
+            html += `
+                <div class="total-nutrition">
+                    <h3>📊 月平均（記録日数: ${recordDays}日）</h3>
+                    <div class="limit-comparison">
+                        ${createLimitItem('カロリー', monthAverage.calories, limits.calories, 'kcal')}
+                        ${createLimitItem('塩分', monthAverage.salt, limits.salt, 'g')}
+                        ${createLimitItem('タンパク質', monthAverage.protein, limits.protein, 'g')}
+                        ${createLimitItem('カリウム', monthAverage.potassium, limits.potassium, 'mg')}
+                        ${createLimitItem('リン', monthAverage.phosphorus, limits.phosphorus, 'mg')}
+                    </div>
+                </div>
+            `;
+            
+            html += createMonthlyNutritionCharts(monthData, year, month);
+            container.innerHTML = html;
+        }
+
+        // ===== バーグラフ生成（週別用） =====
+        function createNutritionCharts(dataArray, period) {
+            if (dataArray.length === 0) {
+                return '<div class="empty-message">📊 グラフ表示するデータがありません</div>';
+            }
+            
+            const nutritionTypes = [
+                { key: 'calories', label: 'カロリー', unit: 'kcal', limit: limits.calories, color: '#ff6b6b' },
+                { key: 'salt', label: '塩分', unit: 'g', limit: limits.salt, color: '#4ecdc4' },
+                { key: 'protein', label: 'タンパク質', unit: 'g', limit: limits.protein, color: '#45b7d1' },
+                { key: 'potassium', label: 'カリウム', unit: 'mg', limit: limits.potassium, color: '#f9ca24' },
+                { key: 'phosphorus', label: 'リン', unit: 'mg', limit: limits.phosphorus, color: '#a29bfe' }
+            ];
+            
+            const mealTypeColors = {
+                breakfast: '#ff9f43',
+                lunch: '#feca57',
+                dinner: '#667eea',
+                snack: '#1e3a8a'
+            };
+            
+            const mealTypeLabels = {
+                breakfast: '朝食',
+                lunch: '昼食',
+                dinner: '夕食',
+                snack: '間食'
+            };
+            
+            let html = `
+                <div class="total-nutrition" style="margin-top: 30px;">
+                    <h3>📊 ${period}グラフ表示</h3>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; justify-content: center;">
+                        ${Object.entries(mealTypeLabels).map(([key, label]) => `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; background: ${mealTypeColors[key]}; border-radius: 4px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+                                <span style="font-size: 14px; font-weight: 600; color: #333;">${label}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+            `;
+            
+            html += renderNutritionCharts(dataArray, nutritionTypes, mealTypeColors, mealTypeLabels, period, false);
+            html += `</div>`;
+            
+            return html;
+        }
+
+		// ===== 月別グラフ生成（PC/スマホ完全分離版） =====
+		// ===== 月別グラフ生成（週タブ表示修正） =====
+		function createMonthlyNutritionCharts(monthData, year, month) {
+			if (monthData.length === 0) {
+				return '<div class="empty-message">📊 グラフ表示するデータがありません</div>';
+			}
+			
+			const weeks = splitIntoWeeks(monthData, year, month);
+			
+			const nutritionTypes = [
+				{ key: 'calories', label: 'カロリー', unit: 'kcal', limit: limits.calories, color: '#ff6b6b' },
+				{ key: 'salt', label: '塩分', unit: 'g', limit: limits.salt, color: '#4ecdc4' },
+				{ key: 'protein', label: 'タンパク質', unit: 'g', limit: limits.protein, color: '#45b7d1' },
+				{ key: 'potassium', label: 'カリウム', unit: 'mg', limit: limits.potassium, color: '#f9ca24' },
+				{ key: 'phosphorus', label: 'リン', unit: 'mg', limit: limits.phosphorus, color: '#a29bfe' }
+			];
+			
+			const mealTypeColors = {
+				breakfast: '#ff9f43',
+				lunch: '#feca57',
+				dinner: '#667eea',
+				snack: '#1e3a8a'
+			};
+			
+			const mealTypeLabels = {
+				breakfast: '朝食',
+				lunch: '昼食',
+				dinner: '夕食',
+				snack: '間食'
+			};
+			
+			let html = `
+				<div class="total-nutrition" style="margin-top: 30px;">
+					<h3>📊 月別グラフ表示（${year}年${month + 1}月）</h3>
+					
+					<!-- 凡例 -->
+					<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; justify-content: center;">
+						${Object.entries(mealTypeLabels).map(([key, label]) => `
+							<div style="display: flex; align-items: center; gap: 8px;">
+								<div style="width: 24px; height: 24px; background: ${mealTypeColors[key]}; border-radius: 4px; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+								<span style="font-size: 14px; font-weight: 600; color: #333;">${label}</span>
+							</div>
+						`).join('')}
+					</div>
+					
+					<!-- 週選択タブ（スマホ専用） -->
+					<div class="week-tabs-mobile" style="display: none;">
+			`;
+			
+			weeks.forEach((week, index) => {
+				const startDateObj = new Date(week[0].date);
+				const endDateObj = new Date(week[week.length - 1].date);
+				
+				const startDay = startDateObj.getDate();
+				const endDay = endDateObj.getDate();
+				const startMonth = startDateObj.getMonth() + 1;
+				const endMonth = endDateObj.getMonth() + 1;
+				
+				let weekLabel;
+				if (startMonth === endMonth) {
+					weekLabel = `${startMonth}/${startDay}～${endDay}`;
+				} else {
+					weekLabel = `${startMonth}/${startDay}～${endMonth}/${endDay}`;
+				}
+				
+				html += `
+					<button 
+						onclick="showWeekChart(${index})" 
+						id="weekTab${index}"
+						class="week-tab-btn"
+						style="
+							flex-shrink: 0;
+							padding: 12px 20px;
+							border: 2px solid #667eea;
+							background: ${index === 0 ? '#667eea' : 'white'};
+							color: ${index === 0 ? 'white' : '#667eea'};
+							border-radius: 8px;
+							font-weight: bold;
+							font-size: 14px;
+							cursor: pointer;
+							transition: all 0.3s;
+							white-space: nowrap;
+						">
+						第${index + 1}週<br><span style="font-size: 12px;">(${weekLabel})</span>
+					</button>
+				`;
+			});
+			
+			html += `
+					</div>
+					
+					<!-- PC専用: 1ヶ月分表示 -->
+					<div id="monthChartFull" class="month-chart-full">
+			`;
+			
+			html += renderNutritionCharts(monthData, nutritionTypes, mealTypeColors, mealTypeLabels, '月別', false);
+			
+			html += `
+					</div>
+					
+					<!-- スマホ専用: 週別表示 -->
+					<div class="month-chart-weekly" style="display: none;">
+			`;
+			
+			weeks.forEach((weekData, weekIndex) => {
+				const startDateObj = new Date(weekData[0].date);
+				const endDateObj = new Date(weekData[weekData.length - 1].date);
+				const weekRange = `${startDateObj.getMonth() + 1}/${startDateObj.getDate()} ～ ${endDateObj.getMonth() + 1}/${endDateObj.getDate()}`;
+				
+				html += `
+					<div id="weekChart${weekIndex}" class="week-chart-container" style="display: ${weekIndex === 0 ? 'block' : 'none'};">
+						<div style="background: #667eea; color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: bold;">
+							第${weekIndex + 1}週（${weekRange}）- 月曜～日曜
+						</div>
+				`;
+				
+				html += renderNutritionCharts(weekData, nutritionTypes, mealTypeColors, mealTypeLabels, `第${weekIndex + 1}週`, false);
+				
+				html += `
+					</div>
+				`;
+			});
+			
+			html += `
+					</div>
+				</div>
+				
+				<style>
+					.month-chart-full {
+						display: block;
+					}
+					.month-chart-weekly {
+						display: none !important;
+					}
+					.week-tabs-mobile {
+						display: none !important;
+					}
+					
+					@media (max-width: 768px) {
+						.month-chart-full {
+							display: none !important;
+						}
+						.month-chart-weekly {
+							display: block !important;
+						}
+						.week-tabs-mobile {
+							display: flex !important;
+							overflow-x: auto;
+							gap: 10px;
+							padding: 10px;
+							background: #f8f9fa;
+							border-radius: 8px;
+							-webkit-overflow-scrolling: touch;
+							margin-bottom: 20px;
+						}
+						.week-chart-container {
+							width: 100%;
+						}
+					}
+				</style>
+			`;
+			
+			return html;
+		}
+		
+		// ===== 月データを週別に分割（月曜日～日曜日） =====
+		function splitIntoWeeks(monthData, year, month) {
+			const firstDay = new Date(year, month, 1);
+			const lastDay = new Date(year, month + 1, 0);
+			
+			const weeks = [];
+			let currentWeek = [];
+			
+			// 月の初日が月曜日でない場合、その週の月曜日から開始
+			const firstDayOfWeek = firstDay.getDay(); // 0=日, 1=月, ..., 6=土
+			let startDate = new Date(firstDay);
+			
+			if (firstDayOfWeek === 0) {
+				// 日曜日の場合、前週の月曜日（6日前）から
+				startDate.setDate(firstDay.getDate() - 6);
+			} else if (firstDayOfWeek !== 1) {
+				// 月曜日でない場合、その週の月曜日まで戻る
+				startDate.setDate(firstDay.getDate() - (firstDayOfWeek - 1));
+			}
+			
+			// 最終日が日曜日でない場合、その週の日曜日まで延長
+			const lastDayOfWeek = lastDay.getDay();
+			let endDate = new Date(lastDay);
+			
+			if (lastDayOfWeek === 0) {
+				// 日曜日ならそのまま
+			} else {
+				// 日曜日でない場合、その週の日曜日まで延長
+				endDate.setDate(lastDay.getDate() + (7 - lastDayOfWeek));
+			}
+			
+			// 開始日から終了日まで1日ずつループ
+			for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+				const dateStr = new Date(d).toISOString().split('T')[0];
+				const currentMonth = d.getMonth();
+				const dayOfWeek = d.getDay();
+				
+				// 対象月のデータのみを探す
+				if (currentMonth === month) {
+					const dayData = monthData.find(data => data.date === dateStr);
+					
+					if (dayData) {
+						currentWeek.push(dayData);
+					}
+				}
+				
+				// 日曜日で週を区切る
+				if (dayOfWeek === 0) {
+					if (currentWeek.length > 0) {
+						weeks.push(currentWeek);
+						currentWeek = [];
+					}
+				}
+			}
+			
+			// 最後の週が残っている場合
+			if (currentWeek.length > 0) {
+				weeks.push(currentWeek);
+			}
+			
+			console.log(`月別データを${weeks.length}週に分割しました（月曜～日曜）`);
+			weeks.forEach((week, index) => {
+				console.log(`  第${index + 1}週: ${week.length}日分 (${week[0].date} ～ ${week[week.length - 1].date})`);
+			});
+			
+			return weeks;
+		}
+
+        // ===== 週切り替え =====
+        function showWeekChart(weekIndex) {
+            const allCharts = document.querySelectorAll('.week-chart-container');
+            allCharts.forEach(chart => {
+                chart.style.display = 'none';
+            });
+            
+            const allTabs = document.querySelectorAll('.week-tab-btn');
+            allTabs.forEach(tab => {
+                tab.style.background = 'white';
+                tab.style.color = '#667eea';
+            });
+            
+            const selectedChart = document.getElementById(`weekChart${weekIndex}`);
+            if (selectedChart) {
+                selectedChart.style.display = 'block';
+            }
+            
+            const selectedTab = document.getElementById(`weekTab${weekIndex}`);
+            if (selectedTab) {
+                selectedTab.style.background = '#667eea';
+                selectedTab.style.color = 'white';
+                selectedTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+        }
+
+        // ===== グラフ描画（共通） =====
+		// ===== 栄養グラフ描画（共通関数） - 完全版 =====
+		// ===== 栄養グラフ描画（共通関数） - 上限ライン修正版 =====
+		function renderNutritionCharts(dataArray, nutritionTypes, mealTypeColors, mealTypeLabels, periodLabel, showDetails = true) {
+			let html = '';
+			
+			nutritionTypes.forEach(nutriType => {
+				const maxValue = Math.max(
+					nutriType.limit,
+					...dataArray.map(d => d.nutrition[nutriType.key])
+				);
+				const chartMax = Math.max(maxValue * 1.1, nutriType.limit * 1.2);
+				
+				html += `
+					<div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+						<h4 style="color: ${nutriType.color}; margin-bottom: 15px; border-bottom: 2px solid ${nutriType.color}; padding-bottom: 8px;">
+							${nutriType.label} (上限: ${nutriType.limit}${nutriType.unit})
+						</h4>
+						
+						<div class="chart-container" style="position: relative; width: 100%; height: 400px; padding: 20px 10px 40px 60px; background: #fafafa; border-radius: 8px;">
+							
+							<!-- Y軸ラベル -->
+							<div style="position: absolute; left: 5px; top: 20px; bottom: 40px; width: 50px;">
+				`;
+				
+				for (let i = 5; i >= 0; i--) {
+					const value = (chartMax / 5) * i;
+					const position = (i / 5) * 100;
+					
+					html += `
+						<div style="position: absolute; top: ${100 - position}%; right: 5px; transform: translateY(-50%); font-size: 11px; color: #666; text-align: right; width: 100%;">
+							${value.toFixed(0)}
+						</div>
+					`;
+				}
+				
+				html += `
+							</div>
+							
+							<!-- グリッドライン（上限ラインを除く通常グリッドのみ） -->
+							<div style="position: absolute; left: 60px; right: 10px; top: 20px; bottom: 40px;">
+				`;
+				
+				// 🔧 修正: グリッドラインから上限ラインを除外
+				for (let i = 0; i <= 5; i++) {
+					const position = (i / 5) * 100;
+					const gridValue = (chartMax / 5) * (5 - i);
+					
+					// 上限値付近（±2%以内）はスキップして、専用ラインに任せる
+					const isNearLimit = Math.abs(gridValue - nutriType.limit) < (chartMax * 0.02);
+					
+					if (!isNearLimit) {
+						html += `
+							<div style="position: absolute; left: 0; right: 0; top: ${position}%; height: 1px; background: #e0e0e0;"></div>
+						`;
+					}
+				}
+				
+				html += `
+							</div>
+							
+							<!-- 上限値ライン（専用・1本のみ） -->
+				`;
+				
+				const limitPosition = ((chartMax - nutriType.limit) / chartMax) * 100;
+				html += `
+							<div style="position: absolute; left: 60px; right: 10px; top: calc(20px + ${limitPosition}%); height: 2px; background: #dc3545; z-index: 10; pointer-events: none; box-shadow: 0 1px 3px rgba(220, 53, 69, 0.5);">
+								<span style="position: absolute; right: 5px; top: -22px; font-size: 11px; color: #dc3545; font-weight: bold; background: white; padding: 3px 8px; border-radius: 4px; white-space: nowrap; border: 1px solid #dc3545; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+									上限 ${nutriType.limit}${nutriType.unit}
+								</span>
+							</div>
+							
+							<!-- バーグラフエリア -->
+							<div class="chart-bars" style="position: absolute; left: 60px; right: 10px; top: 20px; bottom: 40px; display: flex; align-items: flex-end; justify-content: space-evenly; gap: 3px;">
+				`;
+				
+				dataArray.forEach((dayData) => {
+					const totalValue = dayData.nutrition[nutriType.key];
+					const totalBarHeight = (totalValue / chartMax) * 100;
+					
+					const dateObj = new Date(dayData.date);
+					const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][dateObj.getDay()];
+					const dayColor = dateObj.getDay() === 0 ? '#dc3545' : dateObj.getDay() === 6 ? '#007bff' : '#999';
+					
+					html += `
+						<div class="chart-bar" style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; min-width: 0;">
+							<div style="
+								position: absolute;
+								bottom: 0;
+								width: 100%; 
+								max-width: 60px;
+								height: ${totalBarHeight}%;
+								display: flex; 
+								flex-direction: column-reverse;
+								border-radius: 5px 5px 0 0;
+								overflow: hidden;
+								box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+							">
+					`;
+					
+					['breakfast', 'lunch', 'dinner', 'snack'].forEach(mealType => {
+						const mealValue = dayData.mealTypes[mealType][nutriType.key];
+						
+						if (mealValue > 0) {
+							const mealHeightPercent = (mealValue / totalValue) * 100;
+							
+							html += `
+								<div style="
+									width: 100%; 
+									height: ${mealHeightPercent}%; 
+									background: ${mealTypeColors[mealType]};
+									transition: all 0.2s;
+									display: flex;
+									align-items: center;
+									justify-content: center;
+									font-size: 9px;
+									color: white;
+									font-weight: bold;
+									text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+									border-top: 1px solid rgba(255,255,255,0.2);
+									position: relative;
+									cursor: help;
+								"
+								onmouseover="this.style.opacity='0.85'"
+								onmouseout="this.style.opacity='1'"
+								title="${mealTypeLabels[mealType]}: ${mealValue.toFixed(1)}${nutriType.unit}">
+									${mealHeightPercent > 15 ? mealValue.toFixed(0) : ''}
+								</div>
+							`;
+						}
+					});
+					
+					html += `
+							</div>
+							
+							<div class="bar-total-value" style="
+								position: absolute; 
+								bottom: ${totalBarHeight}%;
+								margin-bottom: 5px;
+								font-size: 10px; 
+								font-weight: bold; 
+								color: ${totalValue > nutriType.limit ? '#dc3545' : '#28a745'};
+								white-space: nowrap;
+								background: rgba(255,255,255,0.95);
+								padding: 2px 4px;
+								border-radius: 3px;
+								box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+								border: 1px solid ${totalValue > nutriType.limit ? '#dc3545' : '#28a745'};
+							">
+								${totalValue.toFixed(0)}
+							</div>
+							
+							<div class="bar-date-label" style="
+								position: absolute;
+								bottom: -35px;
+								font-size: 10px; 
+								color: #333; 
+								text-align: center;
+								font-weight: 500;
+								white-space: nowrap;
+								line-height: 1.3;
+							">
+								${dayData.dayName}
+								<br>
+								<span style="font-size: 9px; color: ${dayColor}; font-weight: bold;">
+									(${dayOfWeek})
+								</span>
+							</div>
+						</div>
+					`;
+				});
+				
+				html += `
+							</div>
+						</div>
+					</div>
+				`;
+			});
+			
+			html += `
+				<style>
+					.chart-bar {
+						flex: 1;
+						max-width: 60px;
+					}
+					
+					.bar-total-value {
+						font-size: 10px;
+					}
+					
+					.bar-date-label {
+						font-size: 10px;
+					}
+					
+					@media (min-width: 769px) {
+						.month-chart-full .chart-bar {
+							max-width: none !important;
+						}
+						.month-chart-full .bar-total-value {
+							font-size: 9px !important;
+						}
+						.month-chart-full .bar-date-label {
+							font-size: 9px !important;
+						}
+					}
+					
+					@media (max-width: 768px) {
+						.chart-bar {
+							max-width: 60px !important;
+						}
+						.bar-total-value {
+							font-size: 10px !important;
+						}
+						.bar-date-label {
+							font-size: 10px !important;
+						}
+						
+						.month-chart-weekly .chart-bar {
+							max-width: 60px !important;
+						}
+					}
+				</style>
+			`;
+			
+			return html;
+		}
+
+        // ===== 設定 =====
+        function saveLimits() {
+            limits.calories = parseFloat(document.getElementById('limitCalories').value) || 2000;
+            limits.salt = parseFloat(document.getElementById('limitSalt').value) || 6;
+            limits.protein = parseFloat(document.getElementById('limitProtein').value) || 60;
+            limits.potassium = parseFloat(document.getElementById('limitPotassium').value) || 2000;
+            limits.phosphorus = parseFloat(document.getElementById('limitPhosphorus').value) || 800;
+            saveToLocalStorage();
+            alert('✅ 上限値を保存しました');
+        }
+
+        // ===== Google Drive連携 =====
+        function saveAppsScriptUrl() {
+            const url = document.getElementById('appsScriptUrl').value.trim();
+            if (!url) {
+                alert('⚠️ URLを入力してください');
+                return;
+            }
+            if (!url.startsWith('https://script.google.com/macros/s/')) {
+                alert('⚠️ 正しいApps Script URLを入力してください');
+                return;
+            }
+            APPS_SCRIPT_URL = url;
+            localStorage.setItem('appsScriptUrl', url);
+            alert('✅ URLを保存しました');
+        }
+
+        function loadAppsScriptUrl() {
+            const savedUrl = localStorage.getItem('appsScriptUrl');
+            if (savedUrl) {
+                const urlInput = document.getElementById('appsScriptUrl');
+                if (urlInput) urlInput.value = savedUrl;
+                APPS_SCRIPT_URL = savedUrl;
+            }
+        }
+
+        function testGoogleDriveConnection() {
+            const url = document.getElementById('appsScriptUrl').value.trim() || APPS_SCRIPT_URL;
+            if (!url) {
+                alert('⚠️ まずURLを入力して保存してください');
+                return;
+            }
+            
+            showLoading('📥 接続テスト中...');
+            
+            const callbackName = 'testCallback_' + Date.now();
+            const script = document.createElement('script');
+            
+            window[callbackName] = function(result) {
+                hideLoading();
+                
+                if (result.success) {
+                    const data = result.data;
+                    
+                    ingredients = (data.ingredients || []).map(ing => {
+                        if (!ing.category) {
+                            ing.category = 'その他';
+                        }
+                        return ing;
+                    });
+                    
+                    dishes = data.dishes || [];
+                    meals = data.meals || [];
+                    records = data.records || [];
+                    limits = data.limits || limits;
+                    
+                    document.getElementById('limitCalories').value = limits.calories;
+                    document.getElementById('limitSalt').value = limits.salt;
+                    document.getElementById('limitProtein').value = limits.protein;
+                    document.getElementById('limitPotassium').value = limits.potassium;
+                    document.getElementById('limitPhosphorus').value = limits.phosphorus;
+                    
+                    saveToLocalStorage();
+                    renderAll();
+                    updateDataStatus();
+                    
+                    alert('✅ Google Driveから読み込みました\n\n食材: ' + ingredients.length + '件\n単品料理: ' + dishes.length + '件\n料理: ' + meals.length + '件\n記録: ' + records.length + '件');
+                } else {
+                    alert('❌ 読み込み失敗\n\n' + (result.error || result.message || '不明なエラー'));
+                }
+                
+                document.head.removeChild(script);
+                delete window[callbackName];
+            };
+            
+            script.src = url + '?callback=' + callbackName;
+            script.onerror = function() {
+                hideLoading();
+                alert('❌ 接続失敗\n\nURLを確認してください');
+                document.head.removeChild(script);
+                delete window[callbackName];
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function loadFromGoogleDrive() {
+            if (!APPS_SCRIPT_URL) {
+                alert('⚠️ Apps Script URLが設定されていません');
+                return;
+            }
+            
+            showLoading('📥 Google Driveから読み込み中...');
+            
+            const callbackName = 'loadCallback_' + Date.now();
+            const script = document.createElement('script');
+            
+            window[callbackName] = function(result) {
+                hideLoading();
+                
+                if (result.success) {
+                    const data = result.data;
+                    ingredients = (data.ingredients || []).map(ing => {
+                        if (!ing.category) ing.category = 'その他';
+                        return ing;
+                    });
+                    dishes = data.dishes || [];
+                    meals = data.meals || [];
+                    records = data.records || [];
+                    limits = data.limits || limits;
+                    
+                    document.getElementById('limitCalories').value = limits.calories;
+                    document.getElementById('limitSalt').value = limits.salt;
+                    document.getElementById('limitProtein').value = limits
+					document.getElementById('limitCalories').value = limits.calories;
+                    document.getElementById('limitSalt').value = limits.salt;
+                    document.getElementById('limitProtein').value = limits.protein;
+                    document.getElementById('limitPotassium').value = limits.potassium;
+                    document.getElementById('limitPhosphorus').value = limits.phosphorus;
+                    
+                    saveToLocalStorage();
+                    renderAll();
+                    updateDataStatus();
+                    
+                    alert('✅ Google Driveから読み込みました\n\n食材: ' + ingredients.length + '件\n単品料理: ' + dishes.length + '件\n料理: ' + meals.length + '件\n記録: ' + records.length + '件');
+                } else {
+                    alert('❌ 読み込み失敗\n\n' + (result.error || result.message || '不明なエラー'));
+                }
+                
+                document.head.removeChild(script);
+                delete window[callbackName];
+            };
+            
+            script.src = APPS_SCRIPT_URL + '?callback=' + callbackName;
+            script.onerror = function() {
+                hideLoading();
+                alert('❌ 接続失敗');
+                document.head.removeChild(script);
+                delete window[callbackName];
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function autoLoadFromGoogleDrive() {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === '') {
+                console.log('Apps Script URLが未設定のため、自動読み込みをスキップ');
+                return;
+            }
+            
+            console.log('Google Driveから自動読み込みを開始...');
+            
+            const callbackName = 'autoLoadCallback_' + Date.now();
+            const script = document.createElement('script');
+            
+            window[callbackName] = function(result) {
+                if (result.success) {
+                    const data = result.data;
+                    
+                    ingredients = (data.ingredients || []).map(ing => {
+                        if (!ing.category) {
+                            ing.category = 'その他';
+                        }
+                        return ing;
+                    });
+                    
+                    dishes = data.dishes || [];
+                    meals = data.meals || [];
+                    records = data.records || [];
+                    limits = data.limits || limits;
+                    
+                    console.log('Google Driveから読み込み成功');
+                    
+                    document.getElementById('limitCalories').value = limits.calories;
+                    document.getElementById('limitSalt').value = limits.salt;
+                    document.getElementById('limitProtein').value = limits.protein;
+                    document.getElementById('limitPotassium').value = limits.potassium;
+                    document.getElementById('limitPhosphorus').value = limits.phosphorus;
+                    
+                    saveToLocalStorage();
+                    renderAll();
+                    updateDataStatus();
+                }
+                
+                document.head.removeChild(script);
+                delete window[callbackName];
+            };
+            
+            script.onerror = function() {
+                console.warn('Google Driveへの接続失敗（自動読み込み）');
+                document.head.removeChild(script);
+                delete window[callbackName];
+            };
+            
+            script.src = APPS_SCRIPT_URL + '?callback=' + callbackName;
+            document.head.appendChild(script);
+        }
+
+        function saveToGoogleDrive() {
+            if (!APPS_SCRIPT_URL) {
+                alert('⚠️ Apps Script URLが設定されていません');
+                return;
+            }
+            
+            const data = {
+                version: '1.0',
+                saveDate: new Date().toISOString(),
+                ingredients: ingredients,
+                dishes: dishes,
+                meals: meals,
+                records: records,
+                limits: limits
+            };
+            
+            console.log('Google Driveに保存開始...');
+            
+            showLoading('📤 Google Driveに保存中...');
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = 'saveFrame';
+            form.style.display = 'none';
+            
+            const dataInput = document.createElement('input');
+            dataInput.type = 'hidden';
+            dataInput.name = 'data';
+            dataInput.value = JSON.stringify(data);
+            form.appendChild(dataInput);
+            
+            let iframe = document.getElementById('saveFrame');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'saveFrame';
+                iframe.name = 'saveFrame';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+            }
+            
+            document.body.appendChild(form);
+            
+            setTimeout(function() {
+                form.submit();
+                
+                setTimeout(function() {
+                    hideLoading();
+                    
+                    const message = '✅ Google Driveに保存しました！\n\n' +
+                        '保存されたデータ:\n' +
+                        '- 食材: ' + ingredients.length + '件\n' +
+                        '- 単品料理: ' + dishes.length + '件\n' +
+                        '- 料理: ' + meals.length + '件\n' +
+                        '- 記録: ' + records.length + '件\n\n' +
+                        '※ Googleドライブの html_app フォルダで確認できます';
+                    
+                    alert(message);
+                    
+                    if (document.body.contains(form)) {
+                        document.body.removeChild(form);
+                    }
+                }, 2000);
+            }, 100);
+        }
+
+        function quickSaveToGoogleDrive() {
+            if (!APPS_SCRIPT_URL) {
+                alert('⚠️ Apps Script URLが設定されていません\n\n「💾 データ管理」タブでURLを設定してください。');
+                return;
+            }
+            
+            if (!confirm('Google Driveに保存しますか？\n\n現在のすべてのデータが保存されます。')) {
+                return;
+            }
+            
+            const data = {
+                version: '1.0',
+                saveDate: new Date().toISOString(),
+                ingredients: ingredients,
+                dishes: dishes,
+                meals: meals,
+                records: records,
+                limits: limits
+            };
+            
+            showLoading('☁️ Google Driveに保存中...');
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = APPS_SCRIPT_URL;
+            form.target = 'saveFrame';
+            form.style.display = 'none';
+            
+            const dataInput = document.createElement('input');
+            dataInput.type = 'hidden';
+            dataInput.name = 'data';
+            dataInput.value = JSON.stringify(data);
+            form.appendChild(dataInput);
+            
+            let iframe = document.getElementById('saveFrame');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'saveFrame';
+                iframe.name = 'saveFrame';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+            }
+            
+            document.body.appendChild(form);
+            
+            setTimeout(function() {
+                form.submit();
+                
+                setTimeout(function() {
+                    hideLoading();
+                    
+                    const message = '✅ Google Driveに保存しました！\n\n' +
+                        '保存されたデータ:\n' +
+                        '- 食材: ' + ingredients.length + '件\n' +
+                        '- 単品料理: ' + dishes.length + '件\n' +
+                        '- 料理: ' + meals.length + '件\n' +
+                        '- 記録: ' + records.length + '件';
+                    
+                    alert(message);
+                    
+                    if (document.body.contains(form)) {
+                        document.body.removeChild(form);
+                    }
+                }, 2000);
+            }, 100);
+        }
+
+        function showLoading(message) {
+            let loadingDiv = document.getElementById('loadingIndicator');
+            if (!loadingDiv) {
+                loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loadingIndicator';
+                document.body.appendChild(loadingDiv);
+            }
+            loadingDiv.innerHTML = '<h3>' + message + '</h3><p>しばらくお待ちください</p>';
+        }
+
+        function hideLoading() {
+            const loadingDiv = document.getElementById('loadingIndicator');
+            if (loadingDiv) loadingDiv.remove();
+        }
+
+        // ===== データ管理 =====
+        function exportData() {
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                ingredients: ingredients,
+                dishes: dishes,
+                meals: meals,
+                records: records,
+                limits: limits
+            };
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nutrition_data_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('✅ データをダウンロードしました');
+        }
+
+        function importData() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('⚠️ ファイルを選択してください');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm('データを読み込むと、現在のデータは上書きされます。よろしいですか？')) {
+                        ingredients = (data.ingredients || []).map(ing => {
+                            if (!ing.category) ing.category = 'その他';
+                            return ing;
+                        });
+                        dishes = data.dishes || [];
+                        meals = data.meals || [];
+                        records = data.records || [];
+                        limits = data.limits || limits;
+                        
+                        document.getElementById('limitCalories').value = limits.calories;
+                        document.getElementById('limitSalt').value = limits.salt;
+                        document.getElementById('limitProtein').value = limits.protein;
+                        document.getElementById('limitPotassium').value = limits.potassium;
+                        document.getElementById('limitPhosphorus').value = limits.phosphorus;
+                        
+                        saveToLocalStorage();
+                        renderAll();
+                        updateDataStatus();
+                        alert('✅ データを読み込みました');
+                    }
+                } catch (error) {
+                    alert('❌ ファイルの読み込みに失敗しました\n\n' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (!confirm('本当にすべてのデータを削除しますか？\n\nこの操作は取り消せません！')) return;
+            if (!confirm('最終確認: 本当に削除しますか？')) return;
+            ingredients = [];
+            dishes = [];
+            meals = [];
+            records = [];
+            saveToLocalStorage();
+            renderAll();
+            updateDataStatus();
+            alert('✅ すべてのデータを削除しました');
+        }
+
+        function updateDataStatus() {
+            const status = document.getElementById('dataStatus');
+            if (!status) return;
+            const totalRecords = records.length;
+            const uniqueDates = [...new Set(records.map(r => r.date))].length;
+            status.innerHTML = `
+                <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                    <table style="width: 100%;">
+                        <tr><th style="background: #f8f9fa; text-align: left;">項目</th><th style="background: #f8f9fa; text-align: right;">件数</th></tr>
+                        <tr><td>食材</td><td style="text-align: right;">${ingredients.length} 件</td></tr>
+                        <tr><td>単品料理</td><td style="text-align: right;">${dishes.length} 件</td></tr>
+                        <tr><td>料理</td><td style="text-align: right;">${meals.length} 件</td></tr>
+                        <tr><td>食事記録</td><td style="text-align: right;">${totalRecords} 件</td></tr>
+                        <tr><td>記録日数</td><td style="text-align: right;">${uniqueDates} 日</td></tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        // ===== ローカルストレージ =====
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('nutrition_ingredients', JSON.stringify(ingredients));
+                localStorage.setItem('nutrition_dishes', JSON.stringify(dishes));
+                localStorage.setItem('nutrition_meals', JSON.stringify(meals));
+                localStorage.setItem('nutrition_records', JSON.stringify(records));
+                localStorage.setItem('nutrition_limits', JSON.stringify(limits));
+            } catch (error) {
+                console.error('保存エラー:', error);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedIngredients = localStorage.getItem('nutrition_ingredients');
+                const savedDishes = localStorage.getItem('nutrition_dishes');
+                const savedMeals = localStorage.getItem('nutrition_meals');
+                const savedRecords = localStorage.getItem('nutrition_records');
+                const savedLimits = localStorage.getItem('nutrition_limits');
+                
+                if (savedIngredients) {
+                    ingredients = JSON.parse(savedIngredients);
+                    ingredients = ingredients.map(ing => {
+                        if (!ing.category) {
+                            ing.category = 'その他';
+                        }
+                        return ing;
+                    });
+                }
+                
+                if (savedDishes) dishes = JSON.parse(savedDishes);
+                if (savedMeals) meals = JSON.parse(savedMeals);
+                if (savedRecords) records = JSON.parse(savedRecords);
+                if (savedLimits) {
+                    limits = JSON.parse(savedLimits);
+                    document.getElementById('limitCalories').value = limits.calories;
+                    document.getElementById('limitSalt').value = limits.salt;
+                    document.getElementById('limitProtein').value = limits.protein;
+                    document.getElementById('limitPotassium').value = limits.potassium;
+                    document.getElementById('limitPhosphorus').value = limits.phosphorus;
+                }
+            } catch (error) {
+                console.error('読み込みエラー:', error);
+            }
+        }
+
+        function renderAll() {
+            renderIngredientList();
+            renderDishList();
+            renderMealList();
+        }
+    </script>
+</body>
+</html>
